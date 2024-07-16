@@ -1,3 +1,4 @@
+import browser from "webextension-polyfill";
 document.body.style.border = "5px solid green";
 // @ts-ignore
 const frame = XPCNativeWrapper.unwrap(window).webframe;
@@ -12,7 +13,7 @@ function init() {
     }, 500);
 }
 function done() {
-    // Implement debugger here
+    // Implement debugger her
     let appTree = {};
     const mainAppDef = frame.getMainApp().appDef;
     const mainAppName = mainAppDef.appName;
@@ -21,26 +22,28 @@ function done() {
         appAlias: mainAppAlias,
         subApps: (mainAppDef.subAppsRef) ? {} : null
     };
-    const subAppRefs = Object.keys(mainAppDef.subAppsRef);
-    getSubTree(appTree[mainAppName].subApps, mainAppDef);
+    appTree[mainAppName].subApps = getSubTree(mainAppDef);
     console.log('Done');
     console.log(appTree);
 }
-function getSubTree(subAppTree, currentAppDef) {
+function getSubTree(currentAppDef) {
     // TODO Zweite Ebene
     const subAppRefs = Object.keys(currentAppDef.subAppsRef);
+    let subAppTree = {};
     for (let ref of subAppRefs) {
         try {
-            let subAppDef = frame.getMainApp().getSubAppDef(ref);
-            subAppTree[subAppDef.appName] = {
+            const subAppDef = frame.getMainApp().getSubAppDef(ref);
+            const subAppName = subAppDef.appName;
+            subAppTree[subAppName] = {
                 appAlias: subAppDef.appAlias,
-                subApps: (subAppDef.subAppsRef) ? {} : null
+                subApps: (subAppDef.subAppsRef) ? getSubTree(subAppDef) : null
             };
-            if (subAppDef.subAppsRef) {
-                getSubTree(subAppTree[subAppDef.appName].subApps, subAppDef);
-            }
+            return subAppTree;
         }
         catch { }
     }
 }
-init();
+browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+    if (changeInfo.status === 'complete')
+        init();
+});
