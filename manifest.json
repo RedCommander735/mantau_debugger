@@ -8,7 +8,7 @@
     "content_scripts": [
       {
         "matches": ["*://*.mantau.de/*"],
-        "js": ["src/debugger.js"]
+        "js": ["dist/debugger.js"]
       }
     ]
   }

@@ -1,5 +1,3 @@
-// @ignore-line 
-import browser from "webextension-polyfill";
 document.body.style.border = "5px solid green";
 // @ts-ignore 
 const frame = XPCNativeWrapper.unwrap(window).webframe;
